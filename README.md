@@ -6,7 +6,7 @@ attempt at recreating some of the visualizations found on the Eurostat website u
 inspiration comes from here: https://ec.europa.eu/eurostat/web/energy/visualisations. 
 <br>
 <br>
-All data used in this app has been taken from the [Eurostat Website] (https://ec.europa.eu/eurostat/web/main/home) © European Union, 1995 - today.
+All data used in this app has been taken from the [Eurostat Website](https://ec.europa.eu/eurostat/web/main/home) © European Union, 1995 - today.
 <br>
 
 ## Functions of this Shiny app
