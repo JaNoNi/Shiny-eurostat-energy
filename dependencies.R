@@ -1,6 +1,14 @@
 
 required_packages <- c(
-  "checkpoint"
+  "shiny",
+  "shinydashboard",
+  "tidyverse",
+  "ggplot2",
+  "tools",
+  "DT",
+  "DBI",
+  "RMySQL",
+  "eurostat"
 )
 
 # install missing packages
@@ -19,3 +27,6 @@ library(tidyverse)
 library(ggplot2)
 library(tools)
 library(DT)
+library(DBI)
+library(RMySQL)
+library(eurostat)
