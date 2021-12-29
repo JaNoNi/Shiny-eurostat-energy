@@ -46,6 +46,7 @@ getData <- function(eurostatcode){
     query <- paste("select * from ", eurostatcode, sep = "")
     res   <- dbSendQuery(conn, query)
     data  <- dbFetch(res, n = -1)
+    data$time <- as.Date(data$time)
     dbDisconnect(conn)
     data
   },
@@ -79,3 +80,24 @@ nrg_ind_ren <- getData("nrg_ind_ren")
 nrg_ind_id <- getData("nrg_ind_id")
 #nrg_bal_c <- getData("nrg_bal_c")
 ilc_mdes01 <- getData("ilc_mdes01")
+
+df <- data.frame(code = c("EU27_2020", "EA19"),
+                 name = c("European Union - 27 countries (from 2020",
+                          "Euro area - 19 countries  (from 2015)"),
+                 label = c("European Union - 27 countries (from 2020",
+                           "Euro area - 19 countries  (from 2015)"))
+eu_country_label <- rbind(df, eu_countries %>% arrange(name))
+
+
+# d12 <- nrg_ind_id %>% filter(geo_code == "BE")
+# d12_siec <- d12 %>% distinct(siec) %>% arrange(siec)
+# buttonlist <- vector("list", nrow(d12_siec))
+# for (row in 1:nrow(d12_siec)) {
+#   visiblelist <- rep(F, nrow(d12_siec))
+#   visiblelist[row] <- T
+#   buttonlist[[row]] <- list(method="restyle",
+#                           args=list("visible", visiblelist),
+#                           label=d12_siec[[1]][row])
+#  }
+# visiblelist[nrow(d12_siec)]
+# nrow(d12_siec)-1

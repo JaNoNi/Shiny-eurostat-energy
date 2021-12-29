@@ -37,7 +37,7 @@ ui <- dashboardPage(
                         width = 12,
                         selectInput(inputId  = "countryvar",
                                     label    = "Select Country",
-                                    choices  = c("dummy1", "dummy2"))
+                                    choices  = eu_country_label$name)
                         )
                     ),
                 
@@ -45,11 +45,13 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        title = "Share of energy from renewable sources"
+                        title = "Share of energy from renewable sources",
+                        plotlyOutput("plottab11")
                     ),
                     box(
                         width = 4,
-                        title = "Energy imports dependency"
+                        title = "Energy imports dependency",
+                        plotlyOutput("plottab12")
                     ),
                     box(
                         width = 4,
