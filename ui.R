@@ -55,7 +55,8 @@ ui <- dashboardPage(
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption by product"
+                        title = "Final energy consumption by product",
+                        plotlyOutput("plottab13")
                     )
                 ),
                 
@@ -63,7 +64,8 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        title = "Final energy consumption by sector"
+                        title = "Final energy consumption by sector",
+                        plotlyOutput("plottab21")
                     ),
                     box(
                         width = 4,
@@ -87,7 +89,8 @@ ui <- dashboardPage(
                     ),
                     box(
                         width = 4,
-                        title = "Population unable to keep home adequately warm"
+                        title = "Population unable to keep home adequately warm",
+                        plotlyOutput("plottab33")
                     )
                     
                 )

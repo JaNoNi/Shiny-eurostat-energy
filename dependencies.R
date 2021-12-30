@@ -1,12 +1,17 @@
 
 required_packages <- c(
+  # Basics
+  "tidyverse",
+  "tools",
+  "lubridate",
+  "DT",
+  # Shiny
   "shiny",
   "shinydashboard",
-  "tidyverse",
   "ggplot2",
   "plotly",
-  "tools",
-  "DT",
+  "RColorBrewer",
+  # Data
   "DBI",
   "RMySQL",
   "eurostat"
@@ -22,13 +27,18 @@ if (length(new.packages)) {
 
 rm(new.packages)
 
+# Basics
+library(tidyverse)
+library(tools)
+library(lubridate)
+library(DT)
+# Shiny
 library(shiny)
 library(shinydashboard)
-library(tidyverse)
 library(ggplot2)
 library(plotly)
-library(tools)
-library(DT)
+library(RColorBrewer)
+# Data
 library(DBI)
 library(RMySQL)
 library(eurostat)

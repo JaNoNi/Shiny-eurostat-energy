@@ -1,4 +1,4 @@
-# INSTALL DEPENDENCIES ---------------------------------------------------------
+# Install Dependencies ---------------------------------------------------------
 
 source('dependencies.R')
 # load all packages
@@ -37,13 +37,23 @@ getSqlConnection <- function(){
 }
 
 # Function for getting data ----------------------------------------------------
-getData <- function(eurostatcode){
+getData <- function(eurostatcode, querycond){
   data <- tryCatch({
     # Downloads data from my SQL Server.
     # The Eurostat API is much too slow. Therefore I'm saving all the required
     # data on my own Server, which allows faster data access.
+    if (missing(querycond)) {
+      query <- paste("select * 
+                     from", eurostatcode,
+                     sep = " ")
+    } else {
+      query <- paste("select * 
+                     from", eurostatcode,
+                     querycond,
+                     sep = " ")
+    }
     conn <- getSqlConnection()
-    query <- paste("select * from ", eurostatcode, sep = "")
+    
     res   <- dbSendQuery(conn, query)
     data  <- dbFetch(res, n = -1)
     data$time <- as.Date(data$time)
@@ -75,29 +85,26 @@ data_list <- c("nrg_ind_ren", # Share of energy from renewable sources
                # Final energy consumption in services by fuel type
                "ilc_mdes01") # Population unable to keep home adequately warm
 
-# Load Data
+# Load Data --------------------------------------------------------------------
 nrg_ind_ren <- getData("nrg_ind_ren")
 nrg_ind_id <- getData("nrg_ind_id")
-#nrg_bal_c <- getData("nrg_bal_c")
 ilc_mdes01 <- getData("ilc_mdes01")
+# Load Data with less features than in DB
+query = "
+WHERE unit = 'Thousand tonnes of oil equivalent'"
+nrg_bal_s <- getData("nrg_bal_s", query)
 
+# Country labels
 df <- data.frame(code = c("EU27_2020", "EA19"),
-                 name = c("European Union - 27 countries (from 2020",
+                 name = c("European Union - 27 countries (from 2020)",
                           "Euro area - 19 countries  (from 2015)"),
-                 label = c("European Union - 27 countries (from 2020",
+                 label = c("European Union - 27 countries (from 2020)",
                            "Euro area - 19 countries  (from 2015)"))
 eu_country_label <- rbind(df, eu_countries %>% arrange(name))
 
+# Colors
+nb.cols <- 18
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 
-# d12 <- nrg_ind_id %>% filter(geo_code == "BE")
-# d12_siec <- d12 %>% distinct(siec) %>% arrange(siec)
-# buttonlist <- vector("list", nrow(d12_siec))
-# for (row in 1:nrow(d12_siec)) {
-#   visiblelist <- rep(F, nrow(d12_siec))
-#   visiblelist[row] <- T
-#   buttonlist[[row]] <- list(method="restyle",
-#                           args=list("visible", visiblelist),
-#                           label=d12_siec[[1]][row])
-#  }
-# visiblelist[nrow(d12_siec)]
-# nrow(d12_siec)-1
+rm(db_user, db_password, db_host, db_hostname, db_port, 
+   db_name, host_args, nb.cols, query, df)
