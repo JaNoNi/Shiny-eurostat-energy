@@ -18,7 +18,10 @@ ui <- dashboardPage(
                      icon = icon("chart-line")),
             menuItem(text = "Flow", 
                      tabName = "tab_flowdiagram", 
-                     icon = icon("burn"))
+                     icon = icon("burn")),
+            menuItem(text = "Settings",
+                     tabName = "tab_settings",
+                     icon = icon("sliders-h"))
         )  
     ),
     
@@ -104,26 +107,32 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        selectInput(inputId  = "flow_country",
+                        selectInput(inputId  = "flow_countryvar",
                                     label    = "Select Country",
-                                    choices  = c("dummy1", "dummy2"))
+                                    choices  = eu_country_label$name)
                     ),
                     box(
                         width = 4,
                         selectInput(inputId  = "flow_year",
                                     label    = "Select Year",
-                                    choices  = c("dummy1", "dummy2"))
+                                    choices  = eu_year_label$time)
                     ),
                     box(
                         width = 4,
                         selectInput(inputId  = "flow_fuel",
                                     label    = "Select Fuel Type",
-                                    choices  = c("dummy1", "dummy2"))
+                                    choices  = eu_siec_label$siec,
+                                    selected = "Total")
                     )
                 ),
                 
                 # First row
-                # sankey
+                plotlyOutput("plotflow")
+            ),
+            # Settings Tab -----------------------------------------------------
+            
+            tabItem(
+                tabName = "tab_settings"
             )
         )
     )

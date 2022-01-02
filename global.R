@@ -74,6 +74,7 @@ getData <- function(eurostatcode, querycond){
   return(data)
 }
 
+# Load Data --------------------------------------------------------------------
 data_list <- c("nrg_ind_ren", # Share of energy from renewable sources
                "nrg_ind_id", # Energy imports dependency
                "nrg_bal_c", 
@@ -83,24 +84,28 @@ data_list <- c("nrg_ind_ren", # Share of energy from renewable sources
                # Final energy consumption in industry by fuel type
                # Final energy consumption in transport by fuel type
                # Final energy consumption in services by fuel type
-               "ilc_mdes01") # Population unable to keep home adequately warm
+               "ilc_mdes01", # Population unable to keep home adequately warm
+               "nrg_bal_sd")#  Sankey data imports/exports
 
-# Load Data --------------------------------------------------------------------
 nrg_ind_ren <- getData("nrg_ind_ren")
 nrg_ind_id <- getData("nrg_ind_id")
 ilc_mdes01 <- getData("ilc_mdes01")
+nrg_bal_sd <- getData("nrg_bal_sd") %>% mutate(time = lubridate::year(time))
 # Load Data with less features than in DB
 query = "
 WHERE unit = 'Thousand tonnes of oil equivalent'"
 nrg_bal_s <- getData("nrg_bal_s", query)
 
-# Country labels
+# Input Labels -----------------------------------------------------------------
 df <- data.frame(code = c("EU27_2020", "EA19"),
                  name = c("European Union - 27 countries (from 2020)",
                           "Euro area - 19 countries  (from 2015)"),
                  label = c("European Union - 27 countries (from 2020)",
                            "Euro area - 19 countries  (from 2015)"))
+
 eu_country_label <- rbind(df, eu_countries %>% arrange(name))
+eu_year_label <- nrg_bal_sd %>% distinct(time)
+eu_siec_label <- nrg_bal_sd %>% distinct(siec)
 
 # Colors
 nb.cols <- 18
