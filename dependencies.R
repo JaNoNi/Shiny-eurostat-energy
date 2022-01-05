@@ -8,6 +8,7 @@ required_packages <- c(
   # Shiny
   "shiny",
   "shinydashboard",
+  "shinyWidgets",
   "shinyjs",
   "shinyauthr",
   "ggplot2",
@@ -38,6 +39,7 @@ library(DT)
 # Shiny
 library(shiny)
 library(shinydashboard)
+library(shinyWidgets)
 library(shinyjs)
 library(shinyauthr)
 library(ggplot2)
