@@ -5,18 +5,25 @@ server <- function(input, output, session) {
   getGeocode <- reactive({
     eu_country_label$code[which(eu_country_label$name == input$countryvar)]
   })
+  getGeocodetime <- reactive({
+    eu_country_label$code[which(eu_country_label$name == input$time_countryvar)]
+  })
   getGeocodeflow <- reactive({
     eu_country_label$code[which(eu_country_label$name == input$flow_countryvar)]
   })
-  
+  getGeocodetime_country <- reactive({
+    eu_country_label$code[which(eu_country_label$name %in% input$time_picker)]
+  })
   
   # Create reactive inputs -----------------------------------------------------
   observeEvent(input$countryvar, {
+    updateSelectInput(inputId = "time_countryvar", selected = input$countryvar)
     updateSelectInput(inputId = "flow_countryvar", selected = input$countryvar)
-  })
-   # TODO: Show input
+  }) # TODO: Show input
+  
   
   # Create Plots for Overview Tab ----------------------------------------------
+  
   output$plottab11 <- renderPlotly({
     
     # Get data ----
@@ -151,6 +158,7 @@ server <- function(input, output, session) {
                                  siec != "Total")
     return(data)
   }
+  
   # Creates the stacked area charts for the plots 13/21/22/23/31/32
   createPlot <- function(data) {
     
@@ -193,7 +201,7 @@ server <- function(input, output, session) {
       ) %>% 
       hc_legend(enabled = FALSE)
     return(plot)
-  }
+  } # TODO: Highchart library
   
   output$plottab13 <- renderHighchart({
     
@@ -344,7 +352,95 @@ server <- function(input, output, session) {
     ptab_33
   })
   
+  # Create Plots for time tab --------------------------------------------------
+  
+  othercountries <- reactive({
+    # Selection for the picker
+    eu_country_label %>% filter(code != getGeocodetime())
+  })
+  output$timepicker <- renderUI({
+    pickerInput(
+      inputId = "time_picker",
+      label = "Select/deselect countries to compare", 
+      choices = othercountries()$name,
+      options = list(
+        `actions-box` = TRUE), 
+      multiple = TRUE
+    )
+  })
+  
+  # Data frame for added countries
+  addComparecountries <- reactive({
+    geo_code <- c(getGeocodetime(), getGeocodetime_country())
+    label <- c(input$time_countryvar, input$time_picker)
+    
+    df <- data.frame(geo_code = geo_code,
+                     label = label)
+    df
+  })
+  
+  output$plottime <- renderPlotly({
+    
+    # Get data ----
+    dtime <- nrg_cb_pem %>%
+      filter(siec == input$time_fuel)
+    dtime_xaxis_nticks <- dtime %>% distinct(time) %>% count()
+    dtime_filter <- addComparecountries()
+    # Plot options ----
+    title <- list(text = "Net electricity generation by type of fuel",
+                  x = 0,
+                  xanchor = "left",
+                  y = 1,
+                  yanchor = "top",
+                  pad = list(
+                    l = 10,
+                    t = 10
+                    )
+                  )
+    xaxis <- list(title = "",
+                  type = 'date',
+                  showgrid = FALSE,
+                  showline = TRUE,
+                  linecolor  = 'rgb(204, 204, 204)',
+                  automargin = TRUE,
+                  showticklabels = TRUE,
+                  tickmode = 'auto',
+                  nticks = dtime_xaxis_nticks[[1]],
+                  ticks  = '',
+                  tickangle  = 315,
+                  tickformat = "%Y-%B",
+                  tickfont = list(size=8))
+    yaxis = list(title = "Gigawatt-hour",
+                 showgrid = TRUE,
+                 showline = FALSE,
+                 showticklabels = TRUE,
+                 ticks = '',
+                 tickfont = list(size=8),
+                 zeroline = FALSE)
+    # Create plot ----
+    ptime <- plot_ly(dtime, type = "scatter", mode = "lines")
+    for (row in 1:nrow(dtime_filter)) {
+      ptime <- add_trace(
+        ptime,
+        data = dtime %>% filter(geo_code == dtime_filter$geo_code[[row]]),
+        x = ~time,
+        y = ~values,
+        name = dtime_filter$label[[row]]
+      )
+    }
+    
+    ptime <- layout(ptime,
+                    showlegend = FALSE,
+                    title = title,
+                    xaxis = xaxis,
+                    yaxis = yaxis)
+    ptime <- plotly::config(ptime, 
+                            displaylogo=FALSE)
+    ptime
+  })
+  
   # Create Plots for flow tab --------------------------------------------------
+  
   output$plotflow <- renderPlotly({
     
     # Get data ----
@@ -525,5 +621,5 @@ server <- function(input, output, session) {
         )
     )
     
-  })
+  }) # TODO: Show login
 }

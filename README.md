@@ -11,5 +11,5 @@ All data used in this app has been taken from the [Eurostat Website](https://ec.
 
 ## Functions of this Shiny app
 
-## Licence
-
+The main focus of this app is to investigate the energy consumption of the EU member countries. The main dashboard
+offers a simple overview over key attributes (fuel type used, sectors using them, time series). 
