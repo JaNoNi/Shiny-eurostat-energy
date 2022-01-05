@@ -5,23 +5,24 @@ source('dependencies.R')
 lapply(required_packages, require, character.only = TRUE)
 
 # Load env variables -----------------------------------------------------------
-readRenviron(".env")
-db_user <- Sys.getenv('MYSQL_USER')
-db_password <- Sys.getenv('MYSQL_PASSWORD')
-db_host <- Sys.getenv('MYSQL_HOST')
-db_name <- Sys.getenv('MYSQL_DB')
-
-# Extract port from db_host if present,
-# otherwise use DB_PORT environment variable.
-host_args <- str_split(db_host, pattern = ":")
-if (lengths(host_args) == 1) {
-  db_hostname <- db_host
-  db_port <- Sys.getenv["DB_PORT"]
-} else {
-  db_hostname <- host_args[[1]][1]
-  db_port <- host_args[[1]][2]
+if (readRenviron(".env")) {
+  readRenviron(".env")
+  db_user <- Sys.getenv('MYSQL_USER')
+  db_password <- Sys.getenv('MYSQL_PASSWORD')
+  db_host <- Sys.getenv('MYSQL_HOST')
+  db_name <- Sys.getenv('MYSQL_DB')
+  
+  # Extract port from db_host if present,
+  # otherwise use DB_PORT environment variable.
+  host_args <- str_split(db_host, pattern = ":")
+  if (lengths(host_args) == 1) {
+    db_hostname <- db_host
+    db_port <- Sys.getenv["DB_PORT"]
+  } else {
+    db_hostname <- host_args[[1]][1]
+    db_port <- host_args[[1]][2]
+  }
 }
-
 # Helper for getting new connection to SQL Server ------------------------------
 getSqlConnection <- function(){
   con <-
@@ -35,6 +36,14 @@ getSqlConnection <- function(){
     )
   return(con)
 }
+
+# Load User data ---------------------------------------------------------------
+user_base <- dplyr::tibble(
+  user = c("admin"),
+  password = c("1234"),
+  permissions = c("admin"),
+  name = c("Administrator")
+)
 
 # Function for getting data ----------------------------------------------------
 getData <- function(eurostatcode, querycond){
@@ -94,7 +103,7 @@ nrg_bal_sd <- getData("nrg_bal_sd") %>% mutate(time = lubridate::year(time))
 # Load Data with less features than in DB
 query = "
 WHERE unit = 'Thousand tonnes of oil equivalent'"
-nrg_bal_s <- getData("nrg_bal_s", query)
+nrg_bal_s <- getData("nrg_bal_s", query) %>% filter(unit == "Thousand tonnes of oil equivalent")
 
 # Input Labels -----------------------------------------------------------------
 df <- data.frame(code = c("EU27_2020", "EA19"),
@@ -111,5 +120,4 @@ eu_siec_label <- nrg_bal_sd %>% distinct(siec)
 nb.cols <- 18
 mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 
-rm(db_user, db_password, db_host, db_hostname, db_port, 
-   db_name, host_args, nb.cols, query, df)
+rm(nb.cols, query, df)

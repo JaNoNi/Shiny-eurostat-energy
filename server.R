@@ -1,5 +1,5 @@
 
-server <- function(input, output) {
+server <- function(input, output, session) {
  
   # Get geo_code from input ----------------------------------------------------
   getGeocode <- reactive({
@@ -9,11 +9,13 @@ server <- function(input, output) {
     eu_country_label$code[which(eu_country_label$name == input$flow_countryvar)]
   })
   
+  
   # Create reactive inputs -----------------------------------------------------
   observeEvent(input$countryvar, {
     updateSelectInput(inputId = "flow_countryvar", selected = input$countryvar)
   })
    # TODO: Show input
+  
   # Create Plots for Overview Tab ----------------------------------------------
   output$plottab11 <- renderPlotly({
     
@@ -45,7 +47,7 @@ server <- function(input, output) {
     
     # Create plot ----
     ptab_11 <- plot_ly(dtab_11, x = ~time, y = ~values, 
-                       color = ~nrg_bal, colors = mycolors,
+                       color = ~nrg_bal,
                        type = 'scatter', mode = 'lines+markers',
                        symbol = ~nrg_bal,
                        symbols = c('circle','triangle-up','square', 'diamond'),
@@ -96,8 +98,7 @@ server <- function(input, output) {
                  zeroline = FALSE)
     
     # Create plot ----
-    ptab_12 <- plot_ly(dtab_12, x = ~time, 
-                       colors = mycolors,
+    ptab_12 <- plot_ly(dtab_12, x = ~time,
                        hovertemplate = paste(
                          "%{y:.1f} %",
                          "<extra></extra>")
@@ -142,87 +143,69 @@ server <- function(input, output) {
                ))
     ptab_12
   }) # TODO: Show Updatemenu
-  output$plottab13 <- renderPlotly({
+  
+  # Data function for plots 13/22/23/31/32
+  getSectordata <- function(nrg_bal_code) {
+    data <- nrg_bal_s %>% filter(geo_code == getGeocode(),
+                                 nrg_bal == nrg_bal_code,
+                                 siec != "Total")
+    return(data)
+  }
+  # Creates the stacked area charts for the plots 13/21/22/23/31/32
+  createPlot <- function(data) {
+    
+    plot <- hchart(data, "area", hcaes(x = time, y = values, group = siec)) %>% 
+      hc_xAxis(
+        title = FALSE,
+        tickInterval = 2,
+        labels = list(
+          rotation = 315,
+          style = list(fontSize = 8)
+          )
+        ) %>% 
+      hc_yAxis(
+        title = list(
+          text = "Thousand tonnes of oil equivalent"
+          ),
+        labels = list(
+          style = list(fontSize = 8)
+          )
+        ) %>% 
+      hc_tooltip(
+        useHTML = TRUE,
+        dateTimeLabelFormats = list(
+          day = "%Y",
+          year = "%Y"
+          ),
+        pointFormat = "
+          {point.siec}<br>
+          <b>{point.y} KTOE</b><br>
+          <b>{point.total} KTOE</b>"
+        ) %>% 
+      hc_plotOptions(
+        area = list(
+          stacking = "normal",
+          lineWidth = 1,
+          marker = list(
+            radius = 2
+          )
+        )
+      ) %>% 
+      hc_legend(enabled = FALSE)
+    return(plot)
+  }
+  
+  output$plottab13 <- renderHighchart({
     
     # Get data ----
-    dtab_13_total <- nrg_bal_s %>% 
-      filter(geo_code == getGeocode(),
-             nrg_bal == "Final consumption - energy use",
-             siec == "Total") %>% 
-      pivot_wider(names_from = siec, values_from = values) %>% 
-      select(c(geo_code, time, Total))
-    
-    dtab_13 <- nrg_bal_s %>% filter(geo_code == getGeocode(),
-                                    nrg_bal == "Final consumption - energy use",
-                                    siec != "Total")
-    
-    dtab_13 <- dtab_13 %>% left_join(dtab_13_total, by = c("geo_code", "time"))
-    
-    dtab_13_xaxis_nticks <- dtab_13 %>% distinct(time) %>% count()
-    # Plot options ----
-    xaxis <- list(title = "",
-                  type = 'date',
-                  showgrid = FALSE,
-                  showline = TRUE,
-                  linecolor  = 'rgb(204, 204, 204)',
-                  automargin = TRUE,
-                  showticklabels = TRUE,
-                  tickmode = 'auto',
-                  nticks = dtab_13_xaxis_nticks[[1]]%/%2,
-                  ticks  = '',
-                  tickangle  = 315,
-                  tickformat = "%Y",
-                  tickfont = list(size=8))
-    
-    yaxis = list(title = "Thousand tonnes of oil equivalent",
-                 showgrid = TRUE,
-                 showline = FALSE,
-                 showticklabels = TRUE,
-                 ticks = '',
-                 tickfont = list(size=8),
-                 zeroline = FALSE)
+    dtab_13 <- getSectordata("Final consumption - energy use")
     # Create plot ----
-    ptab_13 <- plot_ly(dtab_13, x = ~time, y = ~values, 
-                       color = ~siec, colors = mycolors,
-                       type = 'scatter', mode = 'lines+markers', # TODO: Adjust markers
-                       line = list(
-                         width = 1),
-                       stackgroup = 'one',
-                       text = ~Total,
-                       hovertemplate = ~paste(
-                         siec, "<br>",
-                         "<b>%{y:,.2r} KTOE</b><br>",
-                         "Total: <b>%{text:,.2r} KTOE</b><br>",
-                         "Year: %{x}",
-                         "<extra></extra>"),
-                       hoveron = 'points+fills',
-                       hoverlabel = list(
-                         font = list(size=11),
-                         align = 'left'))
-    ptab_13 <- plotly::config(ptab_13, 
-                              displaylogo=FALSE,
-                              modeBarButtonsToRemove = c('autoScale', 
-                                                         'zoomIn', 
-                                                         'zoomOut', 
-                                                         'toImage')) %>%  
-      layout(legend = list(orientation = 'h'), 
-             showlegend = FALSE,
-             xaxis = xaxis, yaxis = yaxis,
-             hovermode = 'closest',
-             hoverdistance = 50,
-             dragmode = 'pan')
+    ptab_13 <- createPlot(dtab_13)
     ptab_13
   })
-  output$plottab21 <- renderPlotly({
+  output$plottab21 <- renderHighchart({
     
     # Get data ----
-    dtab_21_total <- nrg_bal_s %>% 
-      filter(geo_code == getGeocode(),
-             nrg_bal == "Final consumption - energy use",
-             siec == "Total") %>% 
-      pivot_wider(names_from = siec, values_from = values) %>% 
-      select(c(geo_code, time, Total))
-    
     sectors <- c("Final consumption - industry sector - energy use",
                  "Final consumption - other sectors - agriculture and forestry - energy use",
                  "Final consumption - other sectors - commercial and public services - energy use",
@@ -233,65 +216,82 @@ server <- function(input, output) {
     dtab_21 <- nrg_bal_s %>% filter(geo_code == getGeocode(),
                                     siec == "Total",
                                     nrg_bal %in% sectors)
-    
-    dtab_21 <- dtab_21 %>% left_join(dtab_21_total, by = c("geo_code", "time"))
-    
-    dtab_21_xaxis_nticks <- dtab_21 %>% distinct(time) %>% count()
-    # Plot options ----
-    xaxis <- list(title = "",
-                  type = 'date',
-                  showgrid = FALSE,
-                  showline = TRUE,
-                  linecolor  = 'rgb(204, 204, 204)',
-                  automargin = TRUE,
-                  showticklabels = TRUE,
-                  tickmode = 'auto',
-                  nticks = dtab_21_xaxis_nticks[[1]]%/%2,
-                  ticks  = '',
-                  tickangle  = 315,
-                  tickformat = "%Y",
-                  tickfont = list(size=8))
-    
-    yaxis = list(title = "Thousand tonnes of oil equivalent",
-                 showgrid = TRUE,
-                 showline = FALSE,
-                 showticklabels = TRUE,
-                 ticks = '',
-                 tickfont = list(size=8),
-                 zeroline = FALSE)
     # Create plot ----
-    ptab_21 <- plot_ly(dtab_21, x = ~time, y = ~values, 
-                       color = ~nrg_bal, colors = mycolors,
-                       type = 'scatter', mode = 'markers+lines', # TODO: adjust markers
-                       #symbol = ~nrg_bal,
-                       line = list(
-                         width = 1),
-                       stackgroup = 'one', fill = "tonexty",
-                       text = ~Total,
-                       hovertemplate = ~paste(
-                         nrg_bal, "<br>",
-                         "<b>%{y:,.2r} KTOE</b><br>",
-                         "Total: <b>%{text:,.2r} KTOE</b><br>",
-                         "Year: %{x}",
-                         "<extra></extra>"),
-                       hoveron = 'points+fills',
-                       hoverlabel = list(
-                         font = list(size=11),
-                         align = 'left'))
-    ptab_21 <- plotly::config(ptab_21, 
-                              displaylogo=FALSE,
-                              modeBarButtonsToRemove = c('autoScale', 
-                                                         'zoomIn', 
-                                                         'zoomOut', 
-                                                         'toImage')) %>%  
-      layout(legend = list(orientation = 'h'), 
-             showlegend = FALSE,
-             xaxis = xaxis, yaxis = yaxis,
-             hovermode = 'closest',
-             hoverdistance = 100,
-             dragmode = 'pan')
+    ptab_21 <- hchart(dtab_21, "area", hcaes(x = time, y = values, group = nrg_bal)) %>% 
+      hc_xAxis(
+        title = FALSE,
+        tickInterval = 2,
+        labels = list(
+          rotation = 315,
+          style = list(fontSize = 8)
+        )
+      ) %>% 
+      hc_yAxis(
+        title = list(
+          text = "Thousand tonnes of oil equivalent"
+        ),
+        labels = list(
+          style = list(fontSize = 8)
+        )
+      ) %>% 
+      hc_tooltip(
+        useHTML = TRUE,
+        dateTimeLabelFormats = list(
+          day = "%Y",
+          year = "%Y"
+        ),
+        pointFormat = "
+          {point.siec}<br>
+          <b>{point.y} KTOE</b><br>
+          <b>{point.total} KTOE</b>"
+      ) %>% 
+      hc_plotOptions(
+        area = list(
+          stacking = "normal",
+          lineWidth = 1,
+          marker = list(
+            radius = 2
+          )
+        )
+      ) %>% 
+      hc_legend(enabled = FALSE)
     ptab_21
-  }) # TODO: Improve Hover Labels
+  })
+  output$plottab22 <- renderHighchart({
+    
+    # Get data ----
+    dtab_22 <- getSectordata("Final consumption - other sectors - households - energy use")
+    # Create plot ----
+    ptab_22 <- createPlot(dtab_22)
+    ptab_22
+  })
+  output$plottab23 <- renderHighchart({
+    
+    # Get data ----
+    dtab_23 <- getSectordata("Final consumption - industry sector - energy use")
+    # Create plot ----
+    ptab_23 <- createPlot(dtab_23)
+    ptab_23
+    
+  })
+  output$plottab31 <- renderHighchart({
+    
+    # Get data ----
+    dtab_31 <- getSectordata("Final consumption - transport sector - energy use")
+    # Create plot ----
+    ptab_31 <- createPlot(dtab_31)
+    ptab_31
+    
+  })
+  output$plottab32 <- renderHighchart({
+    
+    # Get data ----
+    dtab_32 <- getSectordata("Final consumption - other sectors - commercial and public services - energy use")
+    # Create plot ----
+    ptab_32 <- createPlot(dtab_32)
+    ptab_32
+    
+  })
   output$plottab33 <- renderPlotly({
     
     # Get data ----
@@ -323,7 +323,7 @@ server <- function(input, output) {
     
     # Create plot ----
     ptab_33 <- plot_ly(dtab_33, x = ~time, y = ~values, 
-                       color = ~incgrp, colors = mycolors,
+                       color = ~incgrp,
                        type = 'scatter', mode = 'lines+markers',
                        symbol = ~incgrp,
                        symbols = c('circle','triangle-up','square'),
@@ -381,8 +381,12 @@ server <- function(input, output) {
     pflow <- plot_ly(
       type = "sankey",
       orientation = "h",
+      arrangement = "fixed",
       node = list(
-        label = sankey_nodes),
+        label = sankey_nodes,
+        #x = c(NA,0.0,0.0,0.0,0.25,0.45,0.45,0.7,0.7,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0),
+        #y = c(NA,0.5,0.7,0.9, 0.2, 0.2,0.70,1.0,0.3,0.2,0.4,0.5,0.6,0.7,0.8,0.9,1.0),
+        pad = 20),
       link = list(
         source = c(0,1,2,3,4,5,4,6,6,8, 8, 8, 8, 8, 8, 8, 8),
         target = c(4,4,4,4,5,8,6,8,7,9,10,11,12,13,14,15,16),
@@ -413,5 +417,113 @@ server <- function(input, output) {
                                                        'zoomIn', 
                                                        'zoomOut'))
     pflow
+  })
+  
+  # Create Settings ------------------------------------------------------------
+  # Log-In Page ----
+  credentials <- shinyauthr::loginServer(
+                            "login", 
+                            data = user_base,
+                            user_col = user,
+                            pwd_col = password,
+                            #sodium_hashed = TRUE,
+                            log_out = reactive(logout_init()))
+  logout_init <- shinyauthr::logoutServer(
+                              "logout", 
+                              reactive(credentials()$user_auth))
+  # Settings Widgets ----
+  output$settings_hello <- renderText({
+    "Welcome to the settings page. This page lets the user download the
+    latest Eurostat datasets and upload it to the MySQL-Server."
+  })
+  
+  check_Connection <- reactive({
+    conn <- tryCatch({
+      getSqlConnection()
+      list(TRUE, NA)
+    }, error=function(cond) {
+      list(FALSE, cond)
+    })
+  })
+  
+  # Left Box - Server Status ----
+  output$settings_server_status <- renderUI({
+    if (check_Connection()[[1]]) {
+      # Checks if Connection is possible
+      conn <- getSqlConnection()
+      db_info <- dbGetInfo(conn)
+      server_status_text <- paste0(
+        "<b>Connected to the server!</b><br><br>",
+        "Server IP Adress: <b>", db_info$host, "</b><br>",
+        "Database Name: <b>", db_info$dbname, "</b><br>",
+        "MySQL-Version: <b>", db_info$serverVersion, "</b>")
+      dbDisconnect(conn)
+      bg_color <- "#ABEBC6"
+      server_status <- list(server_status_text, bg_color)
+    } else {
+      # Error message for no connection
+      server_status_text <- paste0(
+        "<b>Server connection is not possible.</b><br><br>
+        Please check the following error message:<br>",
+        check_Connection()[[2]])
+      bg_color <- "#F5B7B1"
+      server_status <- list(server_status_text, bg_color)
+    }
+    # Final return for the htmlOutput
+    HTML(paste0("<div style='background-color:",server_status[[2]],"'>",
+                server_status[[1]],
+                "</div>"))
+  })
+  # Middle Box - Table Status ----
+  servercon_database <- reactive({
+    query <- "SHOW TABLE STATUS"
+    conn <- getSqlConnection()
+    res   <- dbSendQuery(conn, query)
+    data  <- dbFetch(res, n = -1) %>% select(
+      !c("Engine", "Version", "Row_format", "Avg_row_length", "Max_data_length", 
+         "Index_length", "Auto_increment", "Check_time", "Collation", "Checksum", 
+         "Create_options"))
+    dbDisconnect(conn)
+    data
+  })
+  output$settings_server_database <- renderDataTable(
+    servercon_database(),
+    options = list(dom = 't')
+  )
+ 
+  # Settings Layout Reactive ----
+  output$settings_selection <- renderUI({
+    req(credentials()$user_auth)
+    
+    tabItem(
+      tabName = "tab_overview_render",
+      # Zero row (info)
+      fluidRow(
+        box(
+          width = 12,
+          textOutput("settings_hello"),
+          tags$head(tags$style("#settings_hello{font-size: 20px;}"
+                               )
+                    )
+        )
+      ),
+      # First row
+      fluidRow(
+        box(
+          width = 4,
+          title = "Server Status",
+          htmlOutput("settings_server_status")
+          ),
+        box(
+          width = 8,
+          title = "Last Database Update",
+          conditionalPanel(
+           condition = 'check_Connection()[[1]] == True',
+           dataTableOutput("settings_server_database")
+           )
+          )
+        )
+    )
+    
   })
 }

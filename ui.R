@@ -12,6 +12,7 @@ ui <- dashboardPage(
     
     dashboardSidebar(
         width = 200,
+        shinyjs::useShinyjs(),
         sidebarMenu(
             menuItem(text = "Overview", 
                      tabName = "tab_overview", 
@@ -28,6 +29,7 @@ ui <- dashboardPage(
     # Body ---------------------------------------------------------------------
     
     dashboardBody(
+        shinyjs::useShinyjs(),
         tabItems(
             
             # Overview Tab -----------------------------------------------------
@@ -59,7 +61,7 @@ ui <- dashboardPage(
                     box(
                         width = 4,
                         title = "Final energy consumption by product",
-                        plotlyOutput("plottab13")
+                        highchartOutput("plottab13")
                     )
                 ),
                 
@@ -68,15 +70,17 @@ ui <- dashboardPage(
                     box(
                         width = 4,
                         title = "Final energy consumption by sector",
-                        plotlyOutput("plottab21")
+                        highchartOutput("plottab21")
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption in households by fuel type"
+                        title = "Final energy consumption in households by fuel type",
+                        highchartOutput("plottab22")
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption in industry by fuel type"
+                        title = "Final energy consumption in industry by fuel type",
+                        highchartOutput("plottab23")
                     )
                 ),
                 
@@ -84,11 +88,13 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        title = "Final energy consumption in transport by fuel type"
+                        title = "Final energy consumption in transport by fuel type",
+                        highchartOutput("plottab31")
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption in services by fuel type"
+                        title = "Final energy consumption in services by fuel type",
+                        highchartOutput("plottab32")
                     ),
                     box(
                         width = 4,
@@ -130,9 +136,13 @@ ui <- dashboardPage(
                 plotlyOutput("plotflow")
             ),
             # Settings Tab -----------------------------------------------------
-            
             tabItem(
-                tabName = "tab_settings"
+                tabName = "tab_settings", 
+                div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
+                shinyauthr::loginUI(
+                    id = "login",
+                    error_message = "You shall not pass!!!!"),
+                uiOutput("settings_selection")
             )
         )
     )

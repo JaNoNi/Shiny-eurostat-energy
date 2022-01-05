@@ -4,6 +4,7 @@
 
 # Session Data files
 .RData
+*data/
 
 # Example code in package build process
 *-Ex.R
@@ -37,3 +38,4 @@ rsconnect/
 
 # Database Authentication
 .env
+*.ppk

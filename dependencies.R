@@ -8,8 +8,11 @@ required_packages <- c(
   # Shiny
   "shiny",
   "shinydashboard",
+  "shinyjs",
+  "shinyauthr",
   "ggplot2",
   "plotly",
+  "highcharter",
   "RColorBrewer",
   # Data
   "DBI",
@@ -35,8 +38,11 @@ library(DT)
 # Shiny
 library(shiny)
 library(shinydashboard)
+library(shinyjs)
+library(shinyauthr)
 library(ggplot2)
 library(plotly)
+library(highcharter)
 library(RColorBrewer)
 # Data
 library(DBI)
