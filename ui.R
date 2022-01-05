@@ -16,6 +16,9 @@ ui <- dashboardPage(
         sidebarMenu(
             menuItem(text = "Overview", 
                      tabName = "tab_overview", 
+                     icon = icon("home")),
+            menuItem(text = "Time",
+                     tabName = "tab_timediagram",
                      icon = icon("chart-line")),
             menuItem(text = "Flow", 
                      tabName = "tab_flowdiagram", 
@@ -105,6 +108,38 @@ ui <- dashboardPage(
                 )
             ),
             
+            # Time Tab ---------------------------------------------------------
+            tabItem(
+                tabName = "tab_timediagram",
+                # Zero row
+                fluidRow(
+                    box(
+                        width = 4,
+                        selectInput(inputId  = "time_countryvar",
+                                    label    = "Select Country",
+                                    choices  = eu_country_label$name)
+                    ),
+                    box(
+                        width = 4,
+                        selectInput(inputId  = "time_fuel",
+                                    label    = "Select Fuel Type",
+                                    choices  = eu_siec_lael_time$siec,
+                                    selected = "Total")
+                    ),
+                    box(
+                        width = 4,
+                        uiOutput("timepicker")
+                    )
+                ),
+                # First row
+                fluidRow(
+                    box(
+                     width = 12,
+                     plotlyOutput("plottime")
+                    )
+                    
+                )
+            ),
             # Flow Tab ---------------------------------------------------------
             
             tabItem(
