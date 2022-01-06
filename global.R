@@ -115,6 +115,12 @@ df <- data.frame(code = c("EU27_2020", "EA19"),
                            "Euro area - 19 countries  (from 2015)"))
 
 eu_country_label <- rbind(df, eu_countries %>% arrange(name))
+# Needed for deployment. For some reason on the Ubuntu server the columns are
+# changed to factors. Those factors break the reactives on the server-side
+eu_country_label <- transform(eu_country_label,
+                              code = as.character(code),
+                              name = as.character(name),
+                              label = as.character(label))
 eu_year_label <- nrg_bal_sd %>% distinct(time)
 eu_siec_label <- nrg_bal_sd %>% distinct(siec)
 eu_siec_lael_time <- nrg_cb_pem %>% distinct(siec)
