@@ -53,17 +53,20 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        title = "Share of energy from renewable sources",
+                        div(style = "font-size:16px;",
+                            "Share of energy from renewable sources"),
                         plotlyOutput("plottab11")
                     ),
                     box(
                         width = 4,
-                        title = "Energy imports dependency",
+                        div(style = "font-size:16px;",
+                            "Energy imports dependency"),
                         plotlyOutput("plottab12")
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption by product",
+                        div(style = "font-size:16px;",
+                            "Final energy consumption by product"),
                         highchartOutput("plottab13")
                     )
                 ),
@@ -72,17 +75,20 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        title = "Final energy consumption by sector",
+                        div(style = "font-size:16px;",
+                            "Final energy consumption by sector"),
                         highchartOutput("plottab21")
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption in households by fuel type",
+                        div(style = "font-size:16px;",
+                            "Final energy consumption in households by fuel type"),
                         highchartOutput("plottab22")
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption in industry by fuel type",
+                        div(style = "font-size:16px;",
+                            "Final energy consumption in industry by fuel type"),
                         highchartOutput("plottab23")
                     )
                 ),
@@ -91,17 +97,20 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        title = "Final energy consumption in transport by fuel type",
+                        div(style = "font-size:16px;",
+                            "Final energy consumption in transport by fuel type"),
                         highchartOutput("plottab31")
                     ),
                     box(
                         width = 4,
-                        title = "Final energy consumption in services by fuel type",
+                        div(style = "font-size:16px;",
+                            "Final energy consumption in services by fuel type"),
                         highchartOutput("plottab32")
                     ),
                     box(
                         width = 4,
-                        title = "Population unable to keep home adequately warm",
+                        div(style = "font-size:16px;",
+                            "Population unable to keep home adequately warm"),
                         plotlyOutput("plottab33")
                     )
                     
