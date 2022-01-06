@@ -166,9 +166,11 @@ server <- function(input, output, session) {
       hc_xAxis(
         title = FALSE,
         tickInterval = 2,
+        tickLength = 0,
         labels = list(
           rotation = 315,
-          style = list(fontSize = 8)
+          style = list(fontSize = 8),
+          y = 10
           )
         ) %>% 
       hc_yAxis(
@@ -229,9 +231,11 @@ server <- function(input, output, session) {
       hc_xAxis(
         title = FALSE,
         tickInterval = 2,
+        tickLength = 0,
         labels = list(
           rotation = 315,
-          style = list(fontSize = 8)
+          style = list(fontSize = 8),
+          y = 10
         )
       ) %>% 
       hc_yAxis(
@@ -393,8 +397,8 @@ server <- function(input, output, session) {
                   y = 1,
                   yanchor = "top",
                   pad = list(
-                    l = 10,
-                    t = 10
+                    l = 5,
+                    t = 5
                     )
                   )
     xaxis <- list(title = "",
@@ -408,7 +412,7 @@ server <- function(input, output, session) {
                   nticks = dtime_xaxis_nticks[[1]],
                   ticks  = '',
                   tickangle  = 315,
-                  tickformat = "%Y-%B",
+                  tickformat = "%Y-M%m",
                   tickfont = list(size=8))
     yaxis = list(title = "Gigawatt-hour",
                  showgrid = TRUE,
@@ -471,8 +475,6 @@ server <- function(input, output, session) {
              siec == input$flow_fuel,
              time == input$flow_year) %>% 
       mutate(values = values*41.868) # KTOE -> TJ
-    # Plot options ----
-    
     # Create plot ----
     pflow <- plot_ly(
       type = "sankey",
