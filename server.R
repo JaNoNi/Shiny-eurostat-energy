@@ -21,7 +21,6 @@ server <- function(input, output, session) {
     updateSelectInput(inputId = "flow_countryvar", selected = input$countryvar)
   }) # TODO: Show input
   
-  
   # Create Plots for Overview Tab ----------------------------------------------
   
   output$plottab11 <- renderPlotly({
@@ -383,12 +382,16 @@ server <- function(input, output, session) {
     df
   })
   
+  timedata <- reactive({
+    data <- nrg_cb_pem %>%
+      filter(siec == input$time_fuel)
+  })
+  
   output$plottime <- renderPlotly({
     
     # Get data ----
-    dtime <- nrg_cb_pem %>%
-      filter(siec == input$time_fuel)
-    dtime_xaxis_nticks <- dtime %>% distinct(time) %>% count()
+    dtime <- timedata()
+    dtime_xaxis_nticks <- timedata() %>% distinct(time) %>% count()
     dtime_filter <- addComparecountries()
     # Plot options ----
     title <- list(text = "Net electricity generation by type of fuel",
@@ -405,6 +408,16 @@ server <- function(input, output, session) {
                   type = 'date',
                   showgrid = FALSE,
                   showline = TRUE,
+                  rangeslider = list(
+                    visible = T),
+                  rangeselector=list(
+                    buttons=list(
+                      list(count=1, label="1m",  step="month", stepmode="backward"),
+                      list(count=6, label="6m",  step="month", stepmode="backward"),
+                      list(count=1, label="YTD", step="year",  stepmode="todate"),
+                      list(count=1, label="1y",  step="year",  stepmode="backward"),
+                      list(step="all"))
+                    ),
                   linecolor  = 'rgb(204, 204, 204)',
                   automargin = TRUE,
                   showticklabels = TRUE,
@@ -437,10 +450,31 @@ server <- function(input, output, session) {
                     showlegend = FALSE,
                     title = title,
                     xaxis = xaxis,
-                    yaxis = yaxis)
+                    yaxis = yaxis,
+                    margin = list(
+                      t = 50,
+                      b = 0
+                    ))
     ptime <- plotly::config(ptime, 
                             displaylogo=FALSE)
     ptime
+  })
+  
+  output$tabletime <- renderDT({
+    timedata() %>% 
+      filter(geo_code %in% addComparecountries()$geo_code) %>% 
+      mutate(values = round(values)) %>% 
+      pivot_wider(names_from = time, values_from = values) %>% 
+      datatable(
+        colnames = c("Code"  = 2,
+                     "Fuel"  = 3,
+                     "Unit"  = 4,
+                     "Label" = 5),
+        filter = "top",
+        options = list(
+          dom = "lrt",
+          scrollX = TRUE)
+      )
   })
   
   # Create Plots for flow tab --------------------------------------------------

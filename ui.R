@@ -147,6 +147,22 @@ ui <- dashboardPage(
                      plotlyOutput("plottime")
                     )
                     
+                ),
+                # Second row
+                fluidRow(
+                    box(
+                        width = 12,
+                        materialSwitch(
+                            inputId = "time_table_switch",
+                            label = "Show Table?", 
+                            status = "primary",
+                            right = TRUE
+                        ),
+                        conditionalPanel(
+                            condition = "input.time_table_switch == true",
+                            DTOutput("tabletime")
+                        )
+                    )
                 )
             ),
             # Flow Tab ---------------------------------------------------------

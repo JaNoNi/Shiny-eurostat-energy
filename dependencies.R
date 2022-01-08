@@ -30,23 +30,3 @@ if (length(new.packages)) {
 }
 
 rm(new.packages)
-
-# Basics
-library(tidyverse)
-library(tools)
-library(lubridate)
-library(DT)
-# Shiny
-library(shiny)
-library(shinydashboard)
-library(shinyWidgets)
-library(shinyjs)
-library(shinyauthr)
-library(ggplot2)
-library(plotly)
-library(highcharter)
-library(RColorBrewer)
-# Data
-library(DBI)
-library(RMySQL)
-library(eurostat)
