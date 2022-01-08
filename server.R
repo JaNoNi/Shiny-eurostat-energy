@@ -188,8 +188,8 @@ server <- function(input, output, session) {
           ),
         pointFormat = "
           {point.siec}<br>
-          <b>{point.y} KTOE</b><br>
-          <b>{point.total} KTOE</b>"
+          <b>{point.y:.0f} KTOE</b><br>
+          <b>{point.total:.0f} KTOE</b>"
         ) %>% 
       hc_plotOptions(
         area = list(
@@ -253,8 +253,8 @@ server <- function(input, output, session) {
         ),
         pointFormat = "
           {point.siec}<br>
-          <b>{point.y} KTOE</b><br>
-          <b>{point.total} KTOE</b>"
+          <b>{point.y:.0f} KTOE</b><br>
+          <b>{point.total:.0f} KTOE</b>"
       ) %>% 
       hc_plotOptions(
         area = list(

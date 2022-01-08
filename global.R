@@ -126,7 +126,12 @@ eu_siec_label <- nrg_bal_sd %>% distinct(siec)
 eu_siec_lael_time <- nrg_cb_pem %>% distinct(siec)
 
 # Colors
+
+opts <- getOption("highcharter.options")
+opts$lang$decimalPoint <- "."
+options(highcharter.options = opts)
+
 nb.cols <- 18
 mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 
-rm(nb.cols, query, df)
+rm(nb.cols, query, df, opts)
