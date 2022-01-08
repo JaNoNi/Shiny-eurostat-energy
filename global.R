@@ -131,6 +131,11 @@ opts <- getOption("highcharter.options")
 opts$lang$decimalPoint <- "."
 options(highcharter.options = opts)
 
+options(spinner.color="#3c8dbc", 
+        spinner.color.background="#ffffff", 
+        spinner.size=1, 
+        spinner.type=8)
+
 nb.cols <- 18
 mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 

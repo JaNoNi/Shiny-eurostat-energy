@@ -55,19 +55,19 @@ ui <- dashboardPage(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Share of energy from renewable sources"),
-                        plotlyOutput("plottab11")
+                        shinycssloaders::withSpinner(plotlyOutput("plottab11"))
                     ),
                     box(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Energy imports dependency"),
-                        plotlyOutput("plottab12")
+                        shinycssloaders::withSpinner(plotlyOutput("plottab12"))
                     ),
                     box(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Final energy consumption by product"),
-                        highchartOutput("plottab13")
+                        shinycssloaders::withSpinner(highchartOutput("plottab13"))
                     )
                 ),
                 
@@ -77,19 +77,19 @@ ui <- dashboardPage(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Final energy consumption by sector"),
-                        highchartOutput("plottab21")
+                        shinycssloaders::withSpinner(highchartOutput("plottab21"))
                     ),
                     box(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Final energy consumption in households by fuel type"),
-                        highchartOutput("plottab22")
+                        shinycssloaders::withSpinner(highchartOutput("plottab22"))
                     ),
                     box(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Final energy consumption in industry by fuel type"),
-                        highchartOutput("plottab23")
+                        shinycssloaders::withSpinner(highchartOutput("plottab23"))
                     )
                 ),
                 
@@ -99,19 +99,19 @@ ui <- dashboardPage(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Final energy consumption in transport by fuel type"),
-                        highchartOutput("plottab31")
+                        shinycssloaders::withSpinner(highchartOutput("plottab31"))
                     ),
                     box(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Final energy consumption in services by fuel type"),
-                        highchartOutput("plottab32")
+                        shinycssloaders::withSpinner(highchartOutput("plottab32"))
                     ),
                     box(
                         width = 4,
                         div(style = "font-size:16px;",
                             "Population unable to keep home adequately warm"),
-                        plotlyOutput("plottab33")
+                        shinycssloaders::withSpinner(plotlyOutput("plottab33"))
                     )
                     
                 )
@@ -193,7 +193,7 @@ ui <- dashboardPage(
                 ),
                 
                 # First row
-                plotlyOutput("plotflow")
+                shinycssloaders::withSpinner(plotlyOutput("plotflow"))
             ),
             # Settings Tab -----------------------------------------------------
             tabItem(
