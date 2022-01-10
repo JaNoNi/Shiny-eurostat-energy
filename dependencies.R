@@ -12,6 +12,7 @@ required_packages <- c(
   "shinyjs",
   "shinyauthr",
   "shinycssloaders",
+  # Plots
   "ggplot2",
   "plotly",
   "highcharter",

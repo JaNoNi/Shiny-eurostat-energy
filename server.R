@@ -164,7 +164,7 @@ server <- function(input, output, session) {
     plot <- hchart(data, "area", hcaes(x = time, y = values, group = siec)) %>% 
       hc_xAxis(
         title = FALSE,
-        tickInterval = 2,
+        tickInterval = 2 * 365 *(24 * 3600 * 1000), # tickinterval in milliseconds
         tickLength = 0,
         labels = list(
           rotation = 315,
@@ -229,7 +229,7 @@ server <- function(input, output, session) {
     ptab_21 <- hchart(dtab_21, "area", hcaes(x = time, y = values, group = nrg_bal)) %>% 
       hc_xAxis(
         title = FALSE,
-        tickInterval = 2,
+        tickInterval = 2 * 365 *(24 * 3600 * 1000), # tickinterval in milliseconds
         tickLength = 0,
         labels = list(
           rotation = 315,
@@ -252,7 +252,7 @@ server <- function(input, output, session) {
           year = "%Y"
         ),
         pointFormat = "
-          {point.siec}<br>
+          {point.nrg_bal}<br>
           <b>{point.y:.0f} KTOE</b><br>
           <b>{point.total:.0f} KTOE</b>"
       ) %>% 
@@ -387,11 +387,27 @@ server <- function(input, output, session) {
       filter(siec == input$time_fuel)
   })
   
+  # TODO: Observe is not adding the traces
+  # observeEvent(input$time_picker, {
+  #   dtime <- timedata()
+  #   dtime_filter <- addComparecountries()
+  #   for (row in 1:nrow(dtime_filter)) {
+  #     plotlyProxy("plottime", session) %>% 
+  #       plotlyProxyInvoke("addTraces", list(data = dtime %>% filter(geo_code %in% dtime_filter$geo_code[[row]]),
+  #                                           type = "scatter", 
+  #                                           mode = "lines",
+  #                                           x = ~time,
+  #                                           y = ~values,
+  #                                           name = dtime_filter$label[[row]])
+  #                         )
+  #   }
+  # })
+  
   output$plottime <- renderPlotly({
     
     # Get data ----
     dtime <- timedata()
-    dtime_xaxis_nticks <- timedata() %>% distinct(time) %>% count()
+    dtime_xaxis_nticks <- dtime %>% distinct(time) %>% count()
     dtime_filter <- addComparecountries()
     # Plot options ----
     title <- list(text = "Net electricity generation by type of fuel",
@@ -435,7 +451,11 @@ server <- function(input, output, session) {
                  tickfont = list(size=8),
                  zeroline = FALSE)
     # Create plot ----
-    ptime <- plot_ly(dtime, type = "scatter", mode = "lines")
+    ptime <- plot_ly(dtime, 
+                     type = "scatter", 
+                     mode = "lines",
+                     hovertemplate = paste(
+                       "%{y:,.2r} GWh"))
     for (row in 1:nrow(dtime_filter)) {
       ptime <- add_trace(
         ptime,
@@ -453,8 +473,8 @@ server <- function(input, output, session) {
                     yaxis = yaxis,
                     margin = list(
                       t = 50,
-                      b = 0
-                    ))
+                      b = 0),
+                    hovermode = 'x')
     ptime <- plotly::config(ptime, 
                             displaylogo=FALSE)
     ptime
@@ -471,10 +491,16 @@ server <- function(input, output, session) {
                      "Unit"  = 4,
                      "Label" = 5),
         filter = "top",
-        options = list(
-          dom = "lrt",
-          scrollX = TRUE)
-      )
+        extensions = 'Buttons',
+        options = list(dom = "Blrtp",
+                       scrollX = TRUE,
+                       buttons = list(
+                         list(extend = 'collection',
+                              buttons = c('csv', 'excel', 'pdf'),
+                              text = 'Download' )
+                         )
+                       )
+        )
   })
   
   # Create Plots for flow tab --------------------------------------------------
@@ -513,7 +539,6 @@ server <- function(input, output, session) {
     pflow <- plot_ly(
       type = "sankey",
       orientation = "h",
-      arrangement = "fixed",
       node = list(
         label = sankey_nodes,
         #x = c(NA,0.0,0.0,0.0,0.25,0.45,0.45,0.7,0.7,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0),
