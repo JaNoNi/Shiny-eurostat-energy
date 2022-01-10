@@ -43,9 +43,12 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 12,
-                        selectInput(inputId  = "countryvar",
-                                    label    = "Select Country",
-                                    choices  = eu_country_label$name)
+                        pickerInput(
+                            inputId = "countryvar",
+                            label = "Select Country", 
+                            choices = list(
+                                `European Union` = eu_country_label$name[c(1,2)],
+                                Countries = eu_country_label$name[-c(1,2)]))
                         )
                     ),
                 
@@ -124,9 +127,12 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        selectInput(inputId  = "time_countryvar",
-                                    label    = "Select Country",
-                                    choices  = eu_country_label$name)
+                        pickerInput(
+                            inputId = "time_countryvar",
+                            label = "Select Country", 
+                            choices = list(
+                                `European Union` = eu_country_label$name[c(1,2)],
+                                Countries = eu_country_label$name[-c(1,2)]))
                     ),
                     box(
                         width = 4,
@@ -173,9 +179,12 @@ ui <- dashboardPage(
                 fluidRow(
                     box(
                         width = 4,
-                        selectInput(inputId  = "flow_countryvar",
-                                    label    = "Select Country",
-                                    choices  = eu_country_label$name)
+                        pickerInput(
+                            inputId = "flow_countryvar",
+                            label = "Select Country", 
+                            choices = list(
+                                `European Union` = eu_country_label$name[c(1,2)],
+                                Countries = eu_country_label$name[-c(1,2)]))
                     ),
                     box(
                         width = 4,
