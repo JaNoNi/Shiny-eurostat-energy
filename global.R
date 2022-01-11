@@ -37,13 +37,15 @@ getSqlConnection <- function(){
   return(con)
 }
 
-# Load User data ---------------------------------------------------------------
-user_base <- dplyr::tibble(
-  user = c("admin"),
-  password = c("1234"),
-  permissions = c("admin"),
-  name = c("Administrator")
-)
+# Connect to SQL Server --------------------------------------------------------
+# Creates connection and sends the query to the server
+connectDB <- function(query) {
+  conn <- getSqlConnection()
+  res  <- dbSendQuery(conn, query)
+  data <- dbFetch(res, n = -1)
+  dbDisconnect(conn)
+  return(data)
+}
 
 # Function for getting data ----------------------------------------------------
 getData <- function(eurostatcode, querycond){
@@ -61,12 +63,8 @@ getData <- function(eurostatcode, querycond){
                      querycond,
                      sep = " ")
     }
-    conn <- getSqlConnection()
-    
-    res   <- dbSendQuery(conn, query)
-    data  <- dbFetch(res, n = -1)
+    data <- connectDB(query)
     data$time <- as.Date(data$time)
-    dbDisconnect(conn)
     data
   },
   error=function(cond) {
@@ -102,10 +100,25 @@ nrg_ind_id <- getData("nrg_ind_id")
 ilc_mdes01 <- getData("ilc_mdes01")
 nrg_bal_sd <- getData("nrg_bal_sd") %>% mutate(time = lubridate::year(time))
 nrg_cb_pem <- getData("nrg_cb_pem") %>% mutate(time = as.Date(time))
+
 # Load Data with less features than in DB
-query = "
-WHERE unit = 'Thousand tonnes of oil equivalent'"
+query = "WHERE unit = 'Thousand tonnes of oil equivalent'"
 nrg_bal_s <- getData("nrg_bal_s", query) %>% filter(unit == "Thousand tonnes of oil equivalent")
+
+# Load User data ---------------------------------------------------------------
+# Temporary
+user_base <- dplyr::tibble(
+  user = c("admin"),
+  password = c("1234"),
+  permissions = c("admin"),
+  name = c("Administrator"))
+
+# Load Messages ----------------------------------------------------------------
+# Temporary
+messageData <- data.frame(from = c("Admin", "Server"),
+                          message = c("Welcome to my App.", "Server is up and running."),
+                          icon = c("globe-europe", "server"),
+                          time = c("Today", "2021-01-03"))
 
 # Input Labels -----------------------------------------------------------------
 df <- data.frame(code = c("EU27_2020", "EA19"),
@@ -125,8 +138,7 @@ eu_year_label <- nrg_bal_sd %>% distinct(time)
 eu_siec_label <- nrg_bal_sd %>% distinct(siec)
 eu_siec_lael_time <- nrg_cb_pem %>% distinct(siec)
 
-# Colors
-
+# Options
 opts <- getOption("highcharter.options")
 opts$lang$decimalPoint <- "."
 options(highcharter.options = opts)
@@ -136,6 +148,7 @@ options(spinner.color="#3c8dbc",
         spinner.size=1, 
         spinner.type=8)
 
+# Color
 nb.cols <- 18
 mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 

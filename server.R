@@ -1,6 +1,16 @@
 
 server <- function(input, output, session) {
  
+  # Create Message Header -------------------------------------------------------
+  output$messageMenu <- renderMenu({
+    # Code to generate each of the messageItems here, in a list. This assumes
+    # that messageData is a data frame with two columns, 'from' and 'message'.
+    msgs <- apply(messageData, 1, function(row) {
+      messageItem(from = row[["from"]], message = row[["message"]], icon = icon(row[["icon"]]), time = row[["time"]])
+      })
+    dropdownMenu(type = "messages", .list = msgs)
+  })
+  
   # Get geo_code from input ----------------------------------------------------
   getGeocode <- reactive({
     eu_country_label$code[which(eu_country_label$name == input$countryvar)]
@@ -226,6 +236,7 @@ server <- function(input, output, session) {
                                     siec == "Total",
                                     nrg_bal %in% sectors)
     # Create plot ----
+    #   Not using the createPlot function, because could not forward the column name
     ptab_21 <- hchart(dtab_21, "area", hcaes(x = time, y = values, group = nrg_bal)) %>% 
       hc_xAxis(
         title = FALSE,
@@ -456,6 +467,7 @@ server <- function(input, output, session) {
                      mode = "lines",
                      hovertemplate = paste(
                        "%{y:,.2r} GWh"))
+    # Adds the selected traces (could not get observeEvent working)
     for (row in 1:nrow(dtime_filter)) {
       ptime <- add_trace(
         ptime,
@@ -594,35 +606,38 @@ server <- function(input, output, session) {
     latest Eurostat datasets and upload it to the MySQL-Server."
   })
   
+  # Left Box - Server Status ----
   check_Connection <- reactive({
+    # Needed for server status
     conn <- tryCatch({
-      getSqlConnection()
-      list(TRUE, NA)
+      list(TRUE, getSqlConnection())
     }, error=function(cond) {
       list(FALSE, cond)
     })
   })
   
-  # Left Box - Server Status ----
   output$settings_server_status <- renderUI({
+    
+    shinyjs::disable(id = "btn_update_sql") # TODO: Add .py script functionality
+    
     if (check_Connection()[[1]]) {
       # Checks if Connection is possible
-      conn <- getSqlConnection()
+      conn <- check_Connection()[[2]]
       db_info <- dbGetInfo(conn)
       server_status_text <- paste0(
-        "<b>Connected to the server!</b><br><br>",
-        "Server IP Adress: <b>", db_info$host, "</b><br>",
-        "Database Name: <b>", db_info$dbname, "</b><br>",
-        "MySQL-Version: <b>", db_info$serverVersion, "</b>")
+            "<b>Connected to the server!</b><br><br>",
+            "Server IP Adress: <b>", db_info$host, "</b><br>",
+            "Database Name: <b>", db_info$dbname, "</b><br>",
+            "MySQL-Version: <b>", db_info$serverVersion, "</b>")
       dbDisconnect(conn)
       bg_color <- "#ABEBC6"
       server_status <- list(server_status_text, bg_color)
     } else {
       # Error message for no connection
       server_status_text <- paste0(
-        "<b>Server connection is not possible.</b><br><br>
-        Please check the following error message:<br>",
-        check_Connection()[[2]])
+            "<b>Server connection is not possible.</b><br><br>
+            Please check the following error message:<br>",
+            check_Connection()[[2]])
       bg_color <- "#F5B7B1"
       server_status <- list(server_status_text, bg_color)
     }
@@ -631,26 +646,39 @@ server <- function(input, output, session) {
                 server_status[[1]],
                 "</div>"))
   })
-  # Middle Box - Table Status ----
-  servercon_database <- reactive({
+  # Right Box - Table Status ----
+  servercon_status <- reactive({
     query <- "SHOW TABLE STATUS"
-    conn <- getSqlConnection()
-    res   <- dbSendQuery(conn, query)
-    data  <- dbFetch(res, n = -1) %>% select(
+    data <- connectDB(query)
+    data <- data %>% select(
       !c("Engine", "Version", "Row_format", "Avg_row_length", "Max_data_length", 
          "Index_length", "Auto_increment", "Check_time", "Collation", "Checksum", 
          "Create_options"))
-    dbDisconnect(conn)
-    data
   })
+  
   output$settings_server_database <- renderDataTable(
-    servercon_database(),
+    servercon_status(),
     options = list(dom = 't')
   )
- 
+  
+  # SQL Table output ----
+  sql_data <- eventReactive(input$sql_send, {
+    connectDB(input$sqlinput) # stores input after pressing the "Query!"-button
+  })
+  
+  output$sql_table <- renderDT({
+    sql_data() %>% 
+      datatable(
+        filter = "top",
+        options = list(scrollX = TRUE)
+      )
+  }) 
+  
   # Settings Layout Reactive ----
+  #   Creates the layout of the settings page
+  #   Syntax is similar to the ui.R layout 
   output$settings_selection <- renderUI({
-    req(credentials()$user_auth)
+    req(credentials()$user_auth) # Login request
     
     tabItem(
       tabName = "tab_overview_render",
@@ -669,17 +697,41 @@ server <- function(input, output, session) {
         box(
           width = 4,
           title = "Server Status",
-          htmlOutput("settings_server_status")
+          htmlOutput("settings_server_status"),
+          tags$div(style="display:inline-block",
+                   title="Currently not working",
+                   actionButton("btn_update_sql", "Update Database"),
+                   style="float:center")
           ),
         box(
           width = 8,
           title = "Last Database Update",
-          conditionalPanel(
-           condition = 'check_Connection()[[1]] == True',
-           dataTableOutput("settings_server_database")
-           )
+          dataTableOutput("settings_server_database")
           )
+        ),
+      # Second row
+      fluidRow(
+        box(
+          width = 4,
+          column(
+            width = 10,
+            textAreaInput(
+              inputId = "sqlinput",
+              label = "SQL Query",
+              resize = "vertical")
+            ),
+          column(
+            width = 2,
+            tags$div(style="display:inline-block",
+                     title="Send SQL-Query to Server",
+                     actionButton("btm_sql_send", "Query!"))
+            )
+          ),
+        box(
+          width = 8,
+          DTOutput("sql_table")
         )
+      )
     )
     
   }) # TODO: Show login

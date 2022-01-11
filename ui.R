@@ -5,7 +5,8 @@ ui <- dashboardPage(
     # Header -------------------------------------------------------------------
     dashboardHeader(
         title = "Energy",
-        titleWidth = 200
+        titleWidth = 200,
+        dropdownMenuOutput("messageMenu")
     ),
     
     # Sidebar ------------------------------------------------------------------
