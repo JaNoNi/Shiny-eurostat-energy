@@ -662,7 +662,7 @@ server <- function(input, output, session) {
   )
   
   # SQL Table output ----
-  sql_data <- eventReactive(input$sql_send, {
+  sql_data <- eventReactive(input$btn_sql_send, {
     connectDB(input$sqlinput) # stores input after pressing the "Query!"-button
   })
   
@@ -724,7 +724,7 @@ server <- function(input, output, session) {
             width = 2,
             tags$div(style="display:inline-block",
                      title="Send SQL-Query to Server",
-                     actionButton("btm_sql_send", "Query!"))
+                     actionButton("btn_sql_send", "Query!"))
             )
           ),
         box(
